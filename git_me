@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# This is a Bash script that simplifies and customizes common Git operations.
+# It allows you to add, commit, and push changes, as well as configure Git credentials and user information.
+# You can use this script to interactively set various Git-related options.
+
+# Define a function for custom git add, commit, and push
+acp() {
+  git add "$1"
+
+  read -p "Enter the commit message: " commit_message
+
+  git commit -m "$commit_message"
+  git push origin main  # Customize your 'git push' command (replace 'main' with your branch)
+}
+
+# Define a function to set Git credentials storage method
+set_git_credentials() {
+  read -p "Choose Git credentials storage method (enter '1' for 'store' or '2' for 'cache'): " choice
+
+  if [ "$choice" = "1" ]; then
+    git config --global credential.helper store
+    echo "Git credentials will be stored in the credential store."
+  elif [ "$choice" = "2" ]; then
+    git config --global credential.helper cache
+    echo "Git credentials will be stored in the cache."
+  else
+    echo "Invalid option. Please enter '1' for 'store' or '2' for 'cache'."
+  fi
+}
+
+# Define a function to set Git user information
+set_git_user_info() {
+  read -p "Enter your Git username: " username
+  read -p "Enter your Git email: " email
+  read -s -p "Enter your Git password: " password
+
+  git config --global user.name "$username"
+  git config --global user.email "$email"
+  git credential approve <<< "protocol=https
+host=github.com
+username=$username
+password=$password"
+}
+
+# Check the first parameter and call the appropriate function
+if [ "$1" = "ask" ]; then
+  echo "Choose an option:"
+  echo "1. acp (Add, Commit, Push)"
+  echo "2. set-credentials (Set Git Credentials Storage)"
+  echo "3. set-user-info (Set Git User Information)"
+  read -p "Enter the number of your choice: " option
+
+  case $option in
+    1)
+      read -p "Enter the file or directory name: " file_or_directory
+      acp "$file_or_directory"
+      ;;
+    2) set_git_credentials ;;
+    3) set_git_user_info ;;
+    *) echo "Invalid option. Use '1', '2', or '3'."
+  esac
+elif [ "$1" = "acp" ]; then
+  read -p "Enter the file or directory name: " file_or_directory
+  acp "$file_or_directory"
+elif [ "$1" = "set-credentials" ]; then
+  set_git_credentials
+elif [ "$1" = "set-user-info" ]; then
+  set_git_user_info
+else
+  echo "Invalid option. Use 'ask', 'acp', 'set-credentials', or 'set-user-info'."
+fi
+
+# Custom smiley face
+echo -e "\nAll done! 😃"
